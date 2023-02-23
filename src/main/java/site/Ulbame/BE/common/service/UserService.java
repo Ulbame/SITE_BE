@@ -2,6 +2,8 @@ package site.Ulbame.BE.common.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -49,8 +51,17 @@ public class UserService implements UserDetailsService {
                 .userPw(encPassword)
                 .userName(userName)
                 .build();
-        userRepository.save(userEntity);
-        return userEntity;
+        try {
+            userRepository.save(userEntity);
+        } catch ( IllegalArgumentException e) {
+            System.out.println("필수 항목 누락");
+        } catch( DataIntegrityViolationException e) {
+            System.out.println("중복 오류");
+        } catch (Exception e ) {
+            System.out.println("기타 예외 발생");
+            e.printStackTrace();
+        } finally {
+            return userEntity;
+        }
     }
-
 }
