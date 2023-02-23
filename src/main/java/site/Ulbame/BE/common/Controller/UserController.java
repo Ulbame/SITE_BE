@@ -32,7 +32,7 @@ public class UserController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
 
-    @PostMapping()
+    @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> paramMap) {
         String userId = paramMap.get("user_id");
         String userPw = paramMap.get("user_pw");
@@ -57,9 +57,16 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<UserEntity> signIn(@RequestBody Map<String, String> paramMap) {
-        UserEntity user = userService.insertUser(paramMap);
+        UserEntity user=null;
+        if(paramMap.containsValue(null) || paramMap.containsValue(""))
+            return new ResponseEntity<UserEntity>(user, HttpStatus.BAD_REQUEST);
+        user = userService.insertUser(paramMap);
         HttpHeaders headers= new HttpHeaders();
-        headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
-        return new ResponseEntity<UserEntity>(user, headers, HttpStatus.CREATED);
+        if(user.getIdx() == null) {
+            return new ResponseEntity<UserEntity>(user, headers, HttpStatus.CONFLICT);
+        } else {
+            return new ResponseEntity<UserEntity>(user, headers, HttpStatus.CREATED);
+        }
+
     }
 }
